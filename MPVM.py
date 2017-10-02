@@ -1,43 +1,53 @@
 # http://www.instantiations.com/PDFs/papers/avmarch.pdf
+from numbers import Number
 
-            # registers
-R = None    ## Receiver/Result
-A = None    ## Argument
-X = None    ## indeX
+import ply.lex  as lex
+import ply.yacc as yacc
 
-S = []      # Stack
-Sp = None   ## Stack Pointer
-Fp = None   ## Frame Pointer
+class VM:
+    def __init__(self,Node,M=[]):
+        self.PC=0 
+        if type(M)==type([]): self.M = M    # ready ti use list
+        else: raise TypeError(M)
+        self.Node=Node # computing node name
+        self.CMD = {
+            'nop':self.nop,'bye':self.bye,
+            '+':self.add,'*':self.mul
+            }
+                # registers
+        self.R = None    ## Receiver/Result
+        self.A = None    ## Argument
+        self.X = None    ## indeX
 
-PC = None   # Program Counter
+        self.S = []      # Stack
+        self.Sp = None   ## Stack Pointer
+        self.Fp = None   ## Frame Pointer
 
-
-  
-# import Queue
-# from numbers import Number
-# 
-# Q = Queue.Queue()   # sys.queue
-# 
-# def nop(): pass
-# def bye(): Q.queue.clear()  # drop system queue
-# def add(): pass
-# 
-# R = {'+':add}
-# 
-# Q.put(nop)
-# # Q.put(bye)
-# Q.put('+')
-# Q.put(1)
-# Q.put(2.3)
-# 
-# class Prim:
-#     def __repr__(self): return '%s:%s'%(self.__class__.__name__.lower(),self.val)
-# class Num(Prim):
-#     def __init__(self,N): self.val = N 
-# 
-# while not Q.empty():
-#     C = Q.get() ; print C.__class__,C,
-#     if callable(C): print 'fn',C(), # functions must be executed as VM commands
-#     elif isinstance(C, Number): print 'num', ; Q.put(Num(C)) # numbers must we wrapped
-#     elif C in R: print 'R',R[C],R[C](),
-#     print
+        self.M = M      # bytecode program Memory
+        self.PC = 0   # Program Counter
+    
+    def __repr__(self):
+        return '[%s] R:%s A:%s X:%s S: %s Sp:%s Fp:%s PC:%s M:%s'%(self.Node,\
+            self.R,self.A,self.X,self.S,self.Sp,self.Fp,self.PC,self.M)
+    def run(self):
+        N=0 ; yield self
+        while self.PC is not None and N<0x7: self.tick() ; N += 1 ; yield self
+    def tick(self):
+        C = self.M[self.PC] ; self.PC += 1
+        if C in self.CMD: self.CMD[C]()
+        elif callable(C): C(self)
+        elif isinstance(C, Number): self.push(C)
+        else: raise BaseException(C)
+    # stack/memory/io
+    def push(self,X): self.S.append(X)
+    def pop(self): return self.S.pop()
+    # command set
+    ## control flow
+    def nop(self): pass
+    def bye(self): self.PC=None # stop VM
+    ## math
+    def add(self): B=self.pop() ; A=self.pop() ; self.push(A.add(B))
+    def mul(self): B=self.pop() ; A=self.pop() ; self.push(A.mul(B))
+    
+S1 = VM('S1','nop 1+2.3*4e-05 bye')
+for i in S1.run(): print i
