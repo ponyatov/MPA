@@ -7,24 +7,24 @@ import ply.yacc as yacc
 class VM:
     def __init__(self,Node,M=[]):
         self.PC=0 
-        if type(M)==type([]): self.M = M    # ready ti use list
+        if type(M)==type([]): self.M = M    # ready to use list
         else: raise TypeError(M)
         self.Node=Node # computing node name
         self.CMD = {
             'nop':self.nop,'bye':self.bye,
             '+':self.add,'*':self.mul
             }
-                # registers
-        self.R = None    ## Receiver/Result
-        self.A = None    ## Argument
-        self.X = None    ## indeX
+                        # registers
+        self.R = None   ## Receiver/Result
+        self.A = None   ## Argument
+        self.X = None   ## indeX
 
-        self.S = []      # Stack
-        self.Sp = None   ## Stack Pointer
-        self.Fp = None   ## Frame Pointer
+        self.S = []     # Stack
+        self.Sp = None  ## Stack Pointer
+        self.Fp = None  ## Frame Pointer
 
         self.M = M      # bytecode program Memory
-        self.PC = 0   # Program Counter
+        self.PC = 0     # Program Counter
     
     def __repr__(self):
         return '[%s] R:%s A:%s X:%s S: %s Sp:%s Fp:%s PC:%s M:%s'%(self.Node,\
@@ -32,12 +32,12 @@ class VM:
     def run(self):
         N=0 ; yield self
         while self.PC is not None and N<0x7: self.tick() ; N += 1 ; yield self
-    def tick(self):
-        C = self.M[self.PC] ; self.PC += 1
-        if C in self.CMD: self.CMD[C]()
-        elif callable(C): C(self)
-        elif isinstance(C, Number): self.push(C)
-        else: raise BaseException(C)
+    def tick(self):                                 # FETCH/DECODE/EXECUTE
+        C = self.M[self.PC] ; self.PC += 1          ## FETCH
+        if C in self.CMD: self.CMD[C]()             ## string-encoded opcode
+        elif callable(C): C(self)                   ## can be fn(VM):return None
+        elif isinstance(C, Number): self.push(C)    ## numbers as is
+        else: raise BaseException(C)                ## unsupported command
     # stack/memory/io
     def push(self,X): self.S.append(X)
     def pop(self): return self.S.pop()
