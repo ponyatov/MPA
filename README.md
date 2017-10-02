@@ -1,8 +1,7 @@
-# MPVM
-### Message Passing Virtual Machine
+# MPA
+### Message Passing Architecture
 
-Python implementation of (cloud) virtual machine
-with SmallTalk-like message passing 
+Cluster-friendly virtual machine based on async message passing 
 
 (c) Dmitry Ponyatov <<dponyatov@gmail.com>> , GNU LesserGPL
 
