@@ -1,5 +1,6 @@
 *~
 *.swp
 *.log
-.*.html
-wiki/
+*.o
+
+mpa
